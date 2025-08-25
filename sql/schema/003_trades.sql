@@ -1,13 +1,13 @@
 -- +goose Up
 
 CREATE TABLE trades (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES users(id),
-    symbol TEXT NOT NULL REFERENCES symbols(symbol),
+    contract TEXT NOT NULL REFERENCES contracts(contract_id),
     side TEXT NOT NULL,
-    quantity INTEGER NOT NULL,
-    bought_price DECIMAL(10, 2) NOT NULL,
-    sold_price DECIMAL(10, 2) NOT NULL,
+    quantity DECIMAL(10, 2) NOT NULL,
+    bought_price DECIMAL(10, 2),
+    sold_price DECIMAL(10, 2),
     created_at TIMESTAMP NOT NULL DEFAULT (datetime('now')),
     updated_at TIMESTAMP NOT NULL DEFAULT (datetime('now'))
 );

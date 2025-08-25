@@ -21,9 +21,12 @@ func StartServer(cfg *ServerConfig) {
 		Handler: mux,
 	}
 
-	mux.Handle("GET /", http.HandlerFunc(handleGetRoot))
-	mux.Handle("POST /users", http.HandlerFunc(cfg.handleCreateUser))
-	mux.Handle("POST /login", http.HandlerFunc(cfg.handleLogin))
+	mux.Handle("GET /api", http.HandlerFunc(handleGetRoot))
+	mux.Handle("GET /api/health", http.HandlerFunc(handleReadiness))
+
+	mux.Handle("POST /api/users", http.HandlerFunc(cfg.handleCreateUser))
+	mux.Handle("POST /api/login", http.HandlerFunc(cfg.handleLogin))
+	mux.Handle("POST /api/trades", http.HandlerFunc(cfg.handleCreateTrade))
 
 	fmt.Printf("Server is running on port %v\n", cfg.Port)
 

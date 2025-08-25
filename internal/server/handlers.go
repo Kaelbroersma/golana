@@ -18,6 +18,8 @@ type ServerConfig struct {
 	MinMarketCap float64
 	DB           *database.Queries
 	Port         string
+	TokenSecret  string
+	HeliusAPIKey string
 }
 
 type CreateUserRequest struct {
@@ -32,7 +34,7 @@ type LoginUserRequest struct {
 }
 
 type UserResponse struct {
-	ID        string    `json:"id"`
+	Token     string    `json:"token"`
 	Name      string    `json:"name"`
 	Balance   float64   `json:"balance"`
 	CreatedAt time.Time `json:"created_at"`
@@ -82,10 +84,16 @@ func (cfg *ServerConfig) handleCreateUser(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	userToken, err := auth.MakeJWT(user.ID, cfg.TokenSecret, 24*time.Hour)
+	if err != nil {
+		RespondWithError(w, 500, "Failed to create JWT", err)
+		return
+	}
+
 	fmt.Printf("Created user: %v\n", req.Name)
 
 	RespondWithJSON(w, http.StatusOK, UserResponse{
-		ID:        user.ID,
+		Token:     userToken,
 		Name:      user.Name,
 		Balance:   user.Balance,
 		CreatedAt: user.CreatedAt,
@@ -104,7 +112,7 @@ func (cfg *ServerConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	user, err := cfg.DB.GetUserByEmail(r.Context(), req.Email)
 	if err != nil {
-		RespondWithError(w, 500, "Failed to get user-check username and try again.", err)
+		RespondWithError(w, 500, "Could not find user. Please try again.", err)
 		return
 	}
 
@@ -114,8 +122,14 @@ func (cfg *ServerConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userToken, err := auth.MakeJWT(user.ID, cfg.TokenSecret, 30*time.Minute)
+	if err != nil {
+		RespondWithError(w, 500, "Failed to create JWT", err)
+		return
+	}
+
 	RespondWithJSON(w, http.StatusOK, UserResponse{
-		ID:        user.ID,
+		Token:     userToken,
 		Name:      user.Name,
 		Balance:   user.Balance,
 		CreatedAt: user.CreatedAt,
@@ -127,4 +141,8 @@ func (cfg *ServerConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 func handleGetRoot(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, "Hello, World!")
+}
+
+func handleReadiness(w http.ResponseWriter, r *http.Request) {
+	RespondWithJSON(w, http.StatusOK, "OK")
 }

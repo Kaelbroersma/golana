@@ -11,3 +11,10 @@ SELECT * FROM users WHERE id = ?;
 -- name: GetUserByEmail :one
 
 SELECT * FROM users WHERE email = ?;
+
+-- name: UpdateUserBalance :one
+
+UPDATE users
+SET balance = ?
+WHERE id = ?
+RETURNING *;

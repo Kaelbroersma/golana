@@ -5,11 +5,12 @@
 package database
 
 import (
+	"database/sql"
 	"time"
 )
 
-type Symbol struct {
-	Symbol        string
+type Contract struct {
+	ContractID    string
 	Name          string
 	WebsocketOpen bool
 	CreatedAt     time.Time
@@ -19,11 +20,11 @@ type Symbol struct {
 type Trade struct {
 	ID          string
 	UserID      string
-	Symbol      string
+	Contract    string
 	Side        string
-	Quantity    int64
-	BoughtPrice float64
-	SoldPrice   float64
+	Quantity    float64
+	BoughtPrice sql.NullFloat64
+	SoldPrice   sql.NullFloat64
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

@@ -1,7 +1,9 @@
-POST http://localhost:8081/login HTTP/1.1
+POST http://localhost:8081/api/trades HTTP/1.1
 content-type: application/json
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnb2xhbmFfc2VydmVyIiwic3ViIjoiY2I5ODQ3NWYtNDk1NC00NzM3LWE3YzAtYTZjOGY3NWY4Yzc4IiwiZXhwIjoxNzU2MTg2NjgyLCJpYXQiOjE3NTYxMDAyODJ9.LlmC1E-zRZK8lepiIlrQMPDnRw6WBIHa_OYS_2dIAAM
 
 {
-    "email": "yo@g",
-    "password": "itsmemario1"
+    "contract": "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
+    "side": "long",
+    "amount_usd": 45.00
 }

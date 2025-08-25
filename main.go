@@ -29,11 +29,29 @@ func main() {
 	dbQueries := database.New(db)
 	cfg.DB = dbQueries
 
+	// Get port
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 	cfg.Port = port
+
+	// Get token secret - WE RECOMMEND USING AN ENCRYPTED TOKEN SECRET. AVOID USING SOMETHING DETERMINISTIC.
+
+	tokenSecret := os.Getenv("TOKEN_SECRET")
+	if tokenSecret == "" {
+		log.Fatal("TOKEN_SECRET is not set")
+	}
+	cfg.TokenSecret = tokenSecret
+
+	// Get HELIUS API KEY
+
+	heliusAPIKey := os.Getenv("HELIUS_API_KEY")
+	if heliusAPIKey == "" {
+		log.Fatal("HELIUS_API_KEY is not set")
+	}
+	cfg.HeliusAPIKey = heliusAPIKey
 
 	// Start Server
 

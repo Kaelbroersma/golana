@@ -1,7 +1,7 @@
 -- +goose Up
 
-CREATE TABLE symbols (
-    symbol TEXT PRIMARY KEY,
+CREATE TABLE contracts (
+    contract_id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     websocket_open BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT (datetime('now')),
@@ -10,4 +10,4 @@ CREATE TABLE symbols (
 
 -- +goose Down
 
-DROP TABLE symbols;
+DROP TABLE contracts;

@@ -53,10 +53,14 @@ func (cfg *ServerConfig) handleCreateTrade(w http.ResponseWriter, r *http.Reques
 
 	_, err = cfg.DB.GetContractByID(r.Context(), req.Contract)
 	if err != nil {
-		cfg.DB.CreateContract(r.Context(), database.CreateContractParams{
+		_, err = cfg.DB.CreateContract(r.Context(), database.CreateContractParams{
 			ContractID: token.Result.ID,
 			Name:       token.Result.TokenInfo.Symbol,
 		})
+		if err != nil {
+			RespondWithError(w, 500, "Failed to create contract", err)
+			return
+		}
 	}
 
 	tokenPrice := token.Result.TokenInfo.PriceInfo.PricePerToken
@@ -72,10 +76,14 @@ func (cfg *ServerConfig) handleCreateTrade(w http.ResponseWriter, r *http.Reques
 
 	switch req.Side {
 	case "long":
-		cfg.DB.UpdateUserBalance(r.Context(), database.UpdateUserBalanceParams{
+		_, err = cfg.DB.UpdateUserBalance(r.Context(), database.UpdateUserBalanceParams{
 			Balance: user.Balance - req.AmountInUSD,
 			ID:      userID,
 		})
+		if err != nil {
+			RespondWithError(w, 500, "Failed to update user balance", err)
+			return
+		}
 
 		trade, err := cfg.DB.CreateTrade(r.Context(), database.CreateTradeParams{
 			ID:          uuid.New().String(),
@@ -93,10 +101,14 @@ func (cfg *ServerConfig) handleCreateTrade(w http.ResponseWriter, r *http.Reques
 		RespondWithJSON(w, http.StatusOK, trade)
 
 	case "short":
-		cfg.DB.UpdateUserBalance(r.Context(), database.UpdateUserBalanceParams{
+		_, err = cfg.DB.UpdateUserBalance(r.Context(), database.UpdateUserBalanceParams{
 			Balance: user.Balance + req.AmountInUSD,
 			ID:      userID,
 		})
+		if err != nil {
+			RespondWithError(w, 500, "Failed to update user balance", err)
+			return
+		}
 
 		trade, err := cfg.DB.CreateTrade(r.Context(), database.CreateTradeParams{
 			ID:          uuid.New().String(),

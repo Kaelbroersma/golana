@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	_ "github.com/tursodatabase/go-libsql"
 )
@@ -17,8 +18,11 @@ func StartServer(cfg *ServerConfig) {
 	mux := http.NewServeMux()
 
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%v", cfg.Port),
-		Handler: mux,
+		Addr:              fmt.Sprintf(":%v", cfg.Port),
+		Handler:           mux,
+		ReadHeaderTimeout: 10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		IdleTimeout:       10 * time.Second,
 	}
 
 	mux.Handle("GET /api", http.HandlerFunc(handleGetRoot))

@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	cfg := server.ServerConfig{}
+	cfg := server.Config{}
 
 	// Load environment
 

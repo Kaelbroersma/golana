@@ -17,7 +17,7 @@ type CreateTradeRequest struct {
 	Quantity float64 `json:"quantity"`
 }
 
-func (cfg *ServerConfig) handleCreateTrade(w http.ResponseWriter, r *http.Request) {
+func (cfg *Config) handleCreateTrade(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.AuthenticateWithBearer(r, cfg.TokenSecret, cfg.DB)
 	if err != nil {
 		RespondWithError(w, 401, "Unable to authenticate user", err)
@@ -92,7 +92,7 @@ type CloseTradeRequest struct {
 	Percent float64 `json:"percent"`
 }
 
-func (cfg *ServerConfig) handleCloseTrade(w http.ResponseWriter, r *http.Request) {
+func (cfg *Config) handleCloseTrade(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.AuthenticateWithBearer(r, cfg.TokenSecret, cfg.DB)
 	if err != nil {
 		RespondWithError(w, 401, "Unauthorized", err)

@@ -9,7 +9,7 @@ import (
 	_ "github.com/tursodatabase/go-libsql"
 )
 
-func StartServer(cfg *ServerConfig) {
+func StartServer(cfg *Config) {
 	if cfg.DB == nil {
 		fmt.Println("DATABASE_URL is not set or database connection failed.")
 		fmt.Println("Running without CRUD operations")

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type ServerConfig struct {
+type Config struct {
 	APIKey       string
 	MinVolume    float64
 	MinMarketCap float64
@@ -43,7 +43,7 @@ type UserResponse struct {
 
 // Methods for server config
 
-func (cfg *ServerConfig) handleCreateUser(w http.ResponseWriter, r *http.Request) {
+func (cfg *Config) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	req := CreateUserRequest{}
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -95,13 +95,13 @@ func (cfg *ServerConfig) handleCreateUser(w http.ResponseWriter, r *http.Request
 	RespondWithJSON(w, http.StatusOK, UserResponse{
 		Token:     userToken,
 		Name:      user.Name,
-		Balance:   user.Balance,
+		Balance:   user.BuyingPower,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	})
 }
 
-func (cfg *ServerConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
+func (cfg *Config) handleLogin(w http.ResponseWriter, r *http.Request) {
 	req := LoginUserRequest{}
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -131,7 +131,7 @@ func (cfg *ServerConfig) handleLogin(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, UserResponse{
 		Token:     userToken,
 		Name:      user.Name,
-		Balance:   user.Balance,
+		Balance:   user.BuyingPower,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	})

@@ -12,9 +12,9 @@ SELECT * FROM users WHERE id = ?;
 
 SELECT * FROM users WHERE email = ?;
 
--- name: UpdateUserBalance :one
+-- name: UpdateUserBalances :one
 
 UPDATE users
-SET balance = ?
+SET buying_power = ?, exposure = ?
 WHERE id = ?
 RETURNING *;

@@ -13,7 +13,7 @@ const createUser = `-- name: CreateUser :one
 
 INSERT INTO users (id, email, name, hashed_password)
 VALUES (?, ?, ?, ?)
-RETURNING id, email, name, hashed_password, balance, created_at, updated_at
+RETURNING id, email, name, hashed_password, buying_power, exposure, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -36,7 +36,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.Name,
 		&i.HashedPassword,
-		&i.Balance,
+		&i.BuyingPower,
+		&i.Exposure,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -45,7 +46,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 
 const getUserByEmail = `-- name: GetUserByEmail :one
 
-SELECT id, email, name, hashed_password, balance, created_at, updated_at FROM users WHERE email = ?
+SELECT id, email, name, hashed_password, buying_power, exposure, created_at, updated_at FROM users WHERE email = ?
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -56,7 +57,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Email,
 		&i.Name,
 		&i.HashedPassword,
-		&i.Balance,
+		&i.BuyingPower,
+		&i.Exposure,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -65,7 +67,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 
 const getUserByID = `-- name: GetUserByID :one
 
-SELECT id, email, name, hashed_password, balance, created_at, updated_at FROM users WHERE id = ?
+SELECT id, email, name, hashed_password, buying_power, exposure, created_at, updated_at FROM users WHERE id = ?
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
@@ -76,35 +78,38 @@ func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
 		&i.Email,
 		&i.Name,
 		&i.HashedPassword,
-		&i.Balance,
+		&i.BuyingPower,
+		&i.Exposure,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const updateUserBalance = `-- name: UpdateUserBalance :one
+const updateUserBalances = `-- name: UpdateUserBalances :one
 
 UPDATE users
-SET balance = ?
+SET buying_power = ?, exposure = ?
 WHERE id = ?
-RETURNING id, email, name, hashed_password, balance, created_at, updated_at
+RETURNING id, email, name, hashed_password, buying_power, exposure, created_at, updated_at
 `
 
-type UpdateUserBalanceParams struct {
-	Balance float64
-	ID      string
+type UpdateUserBalancesParams struct {
+	BuyingPower float64
+	Exposure    float64
+	ID          string
 }
 
-func (q *Queries) UpdateUserBalance(ctx context.Context, arg UpdateUserBalanceParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUserBalance, arg.Balance, arg.ID)
+func (q *Queries) UpdateUserBalances(ctx context.Context, arg UpdateUserBalancesParams) (User, error) {
+	row := q.db.QueryRowContext(ctx, updateUserBalances, arg.BuyingPower, arg.Exposure, arg.ID)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Name,
 		&i.HashedPassword,
-		&i.Balance,
+		&i.BuyingPower,
+		&i.Exposure,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

@@ -3,8 +3,6 @@ package server
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"math"
 	"net/http"
 
@@ -20,7 +18,7 @@ type CreateTradeRequest struct {
 }
 
 func (cfg *ServerConfig) handleCreateTrade(w http.ResponseWriter, r *http.Request) {
-	user, err := auth.AuthenticateWithBearer(r, cfg)
+	user, err := auth.AuthenticateWithBearer(r, cfg.TokenSecret, cfg.DB)
 	if err != nil {
 		RespondWithError(w, 401, "Unable to authenticate user", err)
 		return
@@ -95,7 +93,7 @@ type CloseTradeRequest struct {
 }
 
 func (cfg *ServerConfig) handleCloseTrade(w http.ResponseWriter, r *http.Request) {
-	user, err := auth.AuthenticateWithBearer(r, cfg)
+	user, err := auth.AuthenticateWithBearer(r, cfg.TokenSecret, cfg.DB)
 	if err != nil {
 		RespondWithError(w, 401, "Unauthorized", err)
 		return
@@ -125,11 +123,11 @@ func (cfg *ServerConfig) handleCloseTrade(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	contract, err := tokens.FetchToken(trade.Contract, cfg.HeliusAPIKey)
-	if err != nil {
-		RespondWithError(w, 500, "Failed to fetch contract", err)
-		return
-	}
+	//contract, err := tokens.FetchToken(trade.Contract, cfg.HeliusAPIKey)
+	//if err != nil {
+	//	RespondWithError(w, 500, "Failed to fetch contract", err)
+	//	return
+	//}
 
 	//percentToSell := req.Percent / 100
 	//contractPrice := contract.Result.TokenInfo.PriceInfo.PricePerToken

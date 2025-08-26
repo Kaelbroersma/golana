@@ -6,7 +6,6 @@ import (
 	"net/mail"
 
 	"github.com/Kaelbroersma/golana/internal/database"
-	"github.com/Kaelbroersma/golana/internal/server"
 )
 
 func IsValidEmail(email string) bool {
@@ -14,18 +13,18 @@ func IsValidEmail(email string) bool {
 	return err == nil
 }
 
-func AuthenticateWithBearer(r *http.Request, cfg *server.ServerConfig) (database.User, error) {
+func AuthenticateWithBearer(r *http.Request, tokenSecret string, db *database.Queries) (database.User, error) {
 	bearerToken, err := GetBearerToken(r)
 	if err != nil {
 		return database.User{}, err
 	}
 
-	userID, err := ValidateJWT(bearerToken, cfg.TokenSecret)
+	userID, err := ValidateJWT(bearerToken, tokenSecret)
 	if err != nil {
 		return database.User{}, err
 	}
 
-	user, err := cfg.DB.GetUserByID(r.Context(), userID)
+	user, err := db.GetUserByID(r.Context(), userID)
 	if err != nil {
 		return database.User{}, fmt.Errorf("could not get user")
 	}

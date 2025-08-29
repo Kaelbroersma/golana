@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -21,9 +22,14 @@ type GetAssetParams struct {
 }
 
 func FetchTokenPrice(contract string) (TokenPriceInfo, error) {
-	url := fmt.Sprintf("https://lite-api.jup.ag/price/v3?ids=%v", contract)
+	endpoint := fmt.Sprintf("https://lite-api.jup.ag/price/v3?ids=%v", contract)
 
-	resp, err := http.Get(url)
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return TokenPriceInfo{}, err
+	}
+
+	resp, err := http.Get(u.String())
 	if err != nil {
 		return TokenPriceInfo{}, err
 	}

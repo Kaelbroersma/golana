@@ -11,18 +11,17 @@ import (
 )
 
 const createTrade = `-- name: CreateTrade :one
-INSERT INTO trades (id, user_id, contract, quantity, open_price, close_price)
-VALUES (?, ?, ?, ?, ?, ?)
-RETURNING id, user_id, contract, quantity, open_price, close_price, created_at, updated_at
+INSERT INTO trades (id, user_id, contract, open_quantity, open_price)
+VALUES (?, ?, ?, ?, ?)
+RETURNING id, user_id, contract, open_quantity, closed_quantity, open_price, average_close_price, unrealized_profit, realized_profit, created_at, updated_at
 `
 
 type CreateTradeParams struct {
-	ID         string
-	UserID     string
-	Contract   string
-	Quantity   float64
-	OpenPrice  sql.NullFloat64
-	ClosePrice sql.NullFloat64
+	ID           string
+	UserID       string
+	Contract     string
+	OpenQuantity float64
+	OpenPrice    sql.NullFloat64
 }
 
 func (q *Queries) CreateTrade(ctx context.Context, arg CreateTradeParams) (Trade, error) {
@@ -30,18 +29,20 @@ func (q *Queries) CreateTrade(ctx context.Context, arg CreateTradeParams) (Trade
 		arg.ID,
 		arg.UserID,
 		arg.Contract,
-		arg.Quantity,
+		arg.OpenQuantity,
 		arg.OpenPrice,
-		arg.ClosePrice,
 	)
 	var i Trade
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.Contract,
-		&i.Quantity,
+		&i.OpenQuantity,
+		&i.ClosedQuantity,
 		&i.OpenPrice,
-		&i.ClosePrice,
+		&i.AverageClosePrice,
+		&i.UnrealizedProfit,
+		&i.RealizedProfit,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -49,7 +50,7 @@ func (q *Queries) CreateTrade(ctx context.Context, arg CreateTradeParams) (Trade
 }
 
 const getClosedTrades = `-- name: GetClosedTrades :many
-SELECT id, user_id, contract, quantity, open_price, close_price, created_at, updated_at FROM trades WHERE user_id = ? AND sold_price IS NOT NULL
+SELECT id, user_id, contract, open_quantity, closed_quantity, open_price, average_close_price, unrealized_profit, realized_profit, created_at, updated_at FROM trades WHERE user_id = ? AND sold_price IS NOT NULL
 `
 
 func (q *Queries) GetClosedTrades(ctx context.Context, userID string) ([]Trade, error) {
@@ -65,9 +66,12 @@ func (q *Queries) GetClosedTrades(ctx context.Context, userID string) ([]Trade, 
 			&i.ID,
 			&i.UserID,
 			&i.Contract,
-			&i.Quantity,
+			&i.OpenQuantity,
+			&i.ClosedQuantity,
 			&i.OpenPrice,
-			&i.ClosePrice,
+			&i.AverageClosePrice,
+			&i.UnrealizedProfit,
+			&i.RealizedProfit,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -85,7 +89,7 @@ func (q *Queries) GetClosedTrades(ctx context.Context, userID string) ([]Trade, 
 }
 
 const getOpenTrades = `-- name: GetOpenTrades :many
-SELECT id, user_id, contract, quantity, open_price, close_price, created_at, updated_at FROM trades WHERE user_id = ? AND sold_price IS NULL
+SELECT id, user_id, contract, open_quantity, closed_quantity, open_price, average_close_price, unrealized_profit, realized_profit, created_at, updated_at FROM trades WHERE user_id = ? AND open_quantity > 0
 `
 
 func (q *Queries) GetOpenTrades(ctx context.Context, userID string) ([]Trade, error) {
@@ -101,9 +105,12 @@ func (q *Queries) GetOpenTrades(ctx context.Context, userID string) ([]Trade, er
 			&i.ID,
 			&i.UserID,
 			&i.Contract,
-			&i.Quantity,
+			&i.OpenQuantity,
+			&i.ClosedQuantity,
 			&i.OpenPrice,
-			&i.ClosePrice,
+			&i.AverageClosePrice,
+			&i.UnrealizedProfit,
+			&i.RealizedProfit,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -121,7 +128,7 @@ func (q *Queries) GetOpenTrades(ctx context.Context, userID string) ([]Trade, er
 }
 
 const getTrade = `-- name: GetTrade :one
-SELECT id, user_id, contract, quantity, open_price, close_price, created_at, updated_at FROM trades WHERE id = ?
+SELECT id, user_id, contract, open_quantity, closed_quantity, open_price, average_close_price, unrealized_profit, realized_profit, created_at, updated_at FROM trades WHERE id = ?
 `
 
 func (q *Queries) GetTrade(ctx context.Context, id string) (Trade, error) {
@@ -131,17 +138,59 @@ func (q *Queries) GetTrade(ctx context.Context, id string) (Trade, error) {
 		&i.ID,
 		&i.UserID,
 		&i.Contract,
-		&i.Quantity,
+		&i.OpenQuantity,
+		&i.ClosedQuantity,
 		&i.OpenPrice,
-		&i.ClosePrice,
+		&i.AverageClosePrice,
+		&i.UnrealizedProfit,
+		&i.RealizedProfit,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
+const getTradesForUser = `-- name: GetTradesForUser :many
+SELECT id, user_id, contract, open_quantity, closed_quantity, open_price, average_close_price, unrealized_profit, realized_profit, created_at, updated_at FROM trades WHERE user_id = ?
+`
+
+func (q *Queries) GetTradesForUser(ctx context.Context, userID string) ([]Trade, error) {
+	rows, err := q.db.QueryContext(ctx, getTradesForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Trade
+	for rows.Next() {
+		var i Trade
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Contract,
+			&i.OpenQuantity,
+			&i.ClosedQuantity,
+			&i.OpenPrice,
+			&i.AverageClosePrice,
+			&i.UnrealizedProfit,
+			&i.RealizedProfit,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserTrades = `-- name: GetUserTrades :many
-SELECT id, user_id, contract, quantity, open_price, close_price, created_at, updated_at FROM trades WHERE user_id = ?
+SELECT id, user_id, contract, open_quantity, closed_quantity, open_price, average_close_price, unrealized_profit, realized_profit, created_at, updated_at FROM trades WHERE user_id = ?
 `
 
 func (q *Queries) GetUserTrades(ctx context.Context, userID string) ([]Trade, error) {
@@ -157,9 +206,12 @@ func (q *Queries) GetUserTrades(ctx context.Context, userID string) ([]Trade, er
 			&i.ID,
 			&i.UserID,
 			&i.Contract,
-			&i.Quantity,
+			&i.OpenQuantity,
+			&i.ClosedQuantity,
 			&i.OpenPrice,
-			&i.ClosePrice,
+			&i.AverageClosePrice,
+			&i.UnrealizedProfit,
+			&i.RealizedProfit,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -177,22 +229,24 @@ func (q *Queries) GetUserTrades(ctx context.Context, userID string) ([]Trade, er
 }
 
 const updateTrade = `-- name: UpdateTrade :one
-UPDATE trades SET quantity = ?, open_price = ?, close_price = ? WHERE id = ?
-RETURNING id, user_id, contract, quantity, open_price, close_price, created_at, updated_at
+UPDATE trades SET open_quantity = ?, closed_quantity = ?, average_close_price = ?, realized_profit = ? WHERE id = ?
+RETURNING id, user_id, contract, open_quantity, closed_quantity, open_price, average_close_price, unrealized_profit, realized_profit, created_at, updated_at
 `
 
 type UpdateTradeParams struct {
-	Quantity   float64
-	OpenPrice  sql.NullFloat64
-	ClosePrice sql.NullFloat64
-	ID         string
+	OpenQuantity      float64
+	ClosedQuantity    sql.NullFloat64
+	AverageClosePrice sql.NullFloat64
+	RealizedProfit    sql.NullFloat64
+	ID                string
 }
 
 func (q *Queries) UpdateTrade(ctx context.Context, arg UpdateTradeParams) (Trade, error) {
 	row := q.db.QueryRowContext(ctx, updateTrade,
-		arg.Quantity,
-		arg.OpenPrice,
-		arg.ClosePrice,
+		arg.OpenQuantity,
+		arg.ClosedQuantity,
+		arg.AverageClosePrice,
+		arg.RealizedProfit,
 		arg.ID,
 	)
 	var i Trade
@@ -200,9 +254,12 @@ func (q *Queries) UpdateTrade(ctx context.Context, arg UpdateTradeParams) (Trade
 		&i.ID,
 		&i.UserID,
 		&i.Contract,
-		&i.Quantity,
+		&i.OpenQuantity,
+		&i.ClosedQuantity,
 		&i.OpenPrice,
-		&i.ClosePrice,
+		&i.AverageClosePrice,
+		&i.UnrealizedProfit,
+		&i.RealizedProfit,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)

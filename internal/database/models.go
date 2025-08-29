@@ -18,14 +18,17 @@ type Contract struct {
 }
 
 type Trade struct {
-	ID         string
-	UserID     string
-	Contract   string
-	Quantity   float64
-	OpenPrice  sql.NullFloat64
-	ClosePrice sql.NullFloat64
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID                string
+	UserID            string
+	Contract          string
+	OpenQuantity      float64
+	ClosedQuantity    sql.NullFloat64
+	OpenPrice         sql.NullFloat64
+	AverageClosePrice sql.NullFloat64
+	UnrealizedProfit  sql.NullFloat64
+	RealizedProfit    sql.NullFloat64
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type User struct {

@@ -27,12 +27,13 @@ func StartServer(cfg *Config) {
 
 	mux.Handle("GET /api", http.HandlerFunc(handleGetRoot))
 	mux.Handle("GET /api/health", http.HandlerFunc(handleReadiness))
+	mux.Handle("GET /api/trades", http.HandlerFunc(cfg.handleGetTrades))
 
 	mux.Handle("POST /api/users", http.HandlerFunc(cfg.handleCreateUser))
 	mux.Handle("POST /api/login", http.HandlerFunc(cfg.handleLogin))
 	mux.Handle("POST /api/trades", http.HandlerFunc(cfg.handleCreateTrade))
 
-	mux.Handle("UPDATE /api/trades", http.HandlerFunc(cfg.handleCloseTrade))
+	mux.Handle("PATCH /api/trades", http.HandlerFunc(cfg.handleCloseTrade))
 
 	fmt.Printf("Server is running on port %v\n", cfg.Port)
 

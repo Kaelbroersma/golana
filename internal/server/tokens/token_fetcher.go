@@ -20,7 +20,35 @@ type GetAssetParams struct {
 	ID string `json:"id"`
 }
 
-func FetchToken(contract string, apiKey string) (Token, error) {
+func FetchTokenPrice(contract string) (TokenPriceInfo, error) {
+	url := fmt.Sprintf("https://lite-api.jup.ag/price/v3?ids=%v", contract)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return TokenPriceInfo{}, err
+	}
+
+	if responseCode := resp.StatusCode; responseCode != 200 {
+		return TokenPriceInfo{}, fmt.Errorf("received response code %v", resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return TokenPriceInfo{}, err
+	}
+	defer resp.Body.Close()
+
+	var token TokenPriceResponse
+
+	err = json.Unmarshal(body, &token)
+	if err != nil {
+		return TokenPriceInfo{}, err
+	}
+
+	return token[contract], nil
+}
+
+func FetchTokenData(contract string, apiKey string) (TokenData, error) {
 	url := fmt.Sprintf("https://mainnet.helius-rpc.com/?api-key=%v", apiKey)
 
 	tokenReq := GetAssetRequest{
@@ -34,12 +62,12 @@ func FetchToken(contract string, apiKey string) (Token, error) {
 
 	reqData, err := json.Marshal(tokenReq)
 	if err != nil {
-		return Token{}, err
+		return TokenData{}, err
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqData))
 	if err != nil {
-		return Token{}, err
+		return TokenData{}, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
@@ -48,27 +76,27 @@ func FetchToken(contract string, apiKey string) (Token, error) {
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		return Token{}, err
+		return TokenData{}, err
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return Token{}, err
+		return TokenData{}, err
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(string(body))
-
-	var token Token
+	var token TokenData
 	err = json.Unmarshal(body, &token)
 	if err != nil {
-		return Token{}, err
+		return TokenData{}, err
 	}
+
+	fmt.Printf("Successfully data for token: %v with CA: %v", token.Result.TokenInfo.Symbol, contract)
 
 	return token, nil
 }
 
-func FetchTokenSocket(contract string, apiKey string) (Token, error) {
+func FetchTokenSocket(contract string, apiKey string) (TokenData, error) {
 
-	return Token{}, nil
+	return TokenData{}, nil
 }

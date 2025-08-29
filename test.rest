@@ -1,9 +1,8 @@
-POST http://localhost:8081/api/trades HTTP/1.1
+GET http://localhost:8081/api/trades HTTP/1.1
 content-type: application/json
-authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnb2xhbmFfc2VydmVyIiwic3ViIjoiY2I5ODQ3NWYtNDk1NC00NzM3LWE3YzAtYTZjOGY3NWY4Yzc4IiwiZXhwIjoxNzU2MTg2NjgyLCJpYXQiOjE3NTYxMDAyODJ9.LlmC1E-zRZK8lepiIlrQMPDnRw6WBIHa_OYS_2dIAAM
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnb2xhbmFfc2VydmVyIiwic3ViIjoiYWU5MmNlZGYtOTMwMi00NmIxLWI0N2QtODlmYWFhNjIxMzhlIiwiZXhwIjoxNzU2NTEwMjg4LCJpYXQiOjE3NTY1MDg0ODh9.glVpeseVF4wHIav7bl6k2AlwTkeoBf4nDhmNUCWi57c
 
 {
-    "contract": "2zMMhcVQEXDtdE6vsFS7S7D5oUodfJHE8vd1gnBouauv",
-    "side": "long",
-    "amount_usd": 45.00
+  "email": "test@test.com",
+  "password": "test"
 }

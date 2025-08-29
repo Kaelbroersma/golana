@@ -1,6 +1,15 @@
 package tokens
 
-type Token struct {
+// Types for API Requests to Jupiter (live prices)
+type TokenPriceResponse map[string]TokenPriceInfo
+type TokenPriceInfo struct {
+	UsdPrice    float64 `json:"usdPrice"`
+	PriceChange float64 `json:"priceChange24h"`
+}
+
+// Types for API requests to Helius (Token metadata) -- Jupiter returns JSON objects.. lame
+
+type TokenData struct {
 	Jsonrpc string `json:"jsonrpc"`
 	Result  struct {
 		Interface string `json:"interface"`
